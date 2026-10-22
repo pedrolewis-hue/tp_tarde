@@ -1,5 +1,3 @@
-# tp_tarde
-Repositorio para el tp del turno tarde Lewis Buschi
 /*
     Trabajo Practico - Programacion 1
     Sistema de gestion de pedidos de comida
@@ -8,20 +6,29 @@ Repositorio para el tp del turno tarde Lewis Buschi
     1. Agregar un pedido.
     2. Listar todos los pedidos.
     3. Listar pedidos cuyo precio supere un importe ingresado.
-    4. Buscar un pedido por numero.
+    4. Buscar pedidos por un campo a eleccion (numero, cliente, comida,
+       tipo o estado).
     5. Separar pedidos entregados y pendientes en dos archivos.
     6. Salir.
 
+    Formato de pedidos.txt (una linea por pedido, separado por ';'):
+    numero;cliente;comida;tipo;precio;entregado
+
     Compilar:
-    gcc pedidos.c -o pedidos
+    gcc -Wall -Wextra -std=c99 pedidos.c -o pedidos
 */
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
+#include <ctype.h>
+#include <limits.h>
+#include <errno.h>
 
 #define MAX_TEXTO 60
+#define MAX_LINEA 256
+#define PRECIO_MAXIMO 1000000000.0
 #define ARCHIVO_PEDIDOS "pedidos.txt"
 #define ARCHIVO_ENTREGADOS "entregados.txt"
 #define ARCHIVO_PENDIENTES "pendientes.txt"
@@ -36,20 +43,24 @@ typedef struct {
 } Pedido;
 
 void mostrarMenu(void);
-void limpiarEntrada(void);
+void leerLinea(char destino[], int tamanio);
 void leerTexto(const char mensaje[], char destino[], int tamanio);
+int leerEnteroRango(const char mensaje[], int minimo, int maximo);
 int leerEntero(const char mensaje[]);
 float leerFloat(const char mensaje[]);
 char leerTipo(void);
 bool leerEstado(void);
 bool leerPedido(FILE *archivo, Pedido *pedido);
+bool escribirPedido(FILE *archivo, Pedido pedido);
 void mostrarPedido(Pedido pedido);
+bool contieneTexto(const char texto[], const char buscado[]);
+bool coincide(Pedido pedido, int campo, Pedido criterio);
+bool numeroExiste(int numero);
 bool agregarPedido(void);
 void listarPedidos(void);
 void listarPorPrecio(void);
 void buscarPedido(void);
 void dividirPedidos(void);
-bool numeroExiste(int numero);
 
 int main(void) {
     int opcion;
@@ -90,108 +101,148 @@ void mostrarMenu(void) {
     printf("1. Agregar un pedido\n");
     printf("2. Listar todos los pedidos\n");
     printf("3. Listar pedidos por precio\n");
-    printf("4. Buscar pedido por numero\n");
+    printf("4. Buscar pedidos\n");
     printf("5. Separar entregados y pendientes\n");
     printf("6. Salir\n");
     printf("====================================\n");
 }
 
-void limpiarEntrada(void) {
+/* Lee una linea completa de teclado, sin el '\n' y descartando lo que no
+   entre en el buffer. Si la entrada se cierra (EOF), termina el programa
+   para evitar bucles infinitos. */
+void leerLinea(char destino[], int tamanio) {
+    int longitud;
     int caracter;
-    caracter = getchar();
-    while (caracter != '\n' && caracter != EOF) {
+
+    if (fgets(destino, tamanio, stdin) == NULL) {
+        printf("\nEntrada cerrada. Saliendo del sistema.\n");
+        exit(EXIT_SUCCESS);
+    }
+
+    longitud = (int)strlen(destino);
+    if (longitud > 0 && destino[longitud - 1] == '\n') {
+        destino[longitud - 1] = '\0';
+    } else {
         caracter = getchar();
+        while (caracter != '\n' && caracter != EOF) {
+            caracter = getchar();
+        }
     }
 }
 
+/* Lee un texto no vacio y sin ';' (el ';' es el separador del archivo). */
 void leerTexto(const char mensaje[], char destino[], int tamanio) {
-    int resultado;
-    printf("%s", mensaje);
-    resultado = scanf(" %59[^\n]", destino);
-    if (resultado != 1) {
-        destino[0] = '\0';
+    bool valido = false;
+
+    while (!valido) {
+        printf("%s", mensaje);
+        leerLinea(destino, tamanio);
+
+        if (destino[0] == '\0') {
+            printf("El texto no puede estar vacio.\n");
+        } else if (strchr(destino, ';') != NULL) {
+            printf("No se permite el caracter ';'.\n");
+        } else {
+            valido = true;
+        }
     }
-    limpiarEntrada();
-    destino[tamanio - 1] = '\0';
+}
+
+int leerEnteroRango(const char mensaje[], int minimo, int maximo) {
+    char linea[MAX_LINEA];
+    char *fin;
+    long valor = 0;
+    bool valido = false;
+
+    while (!valido) {
+        printf("%s", mensaje);
+        leerLinea(linea, sizeof(linea));
+
+        errno = 0;
+        valor = strtol(linea, &fin, 10);
+        while (isspace((unsigned char)*fin)) {
+            fin++;
+        }
+
+        if (fin == linea || *fin != '\0' || errno == ERANGE ||
+            valor < minimo || valor > maximo) {
+            printf("Entrada invalida. Ingrese un numero entero valido.\n");
+        } else {
+            valido = true;
+        }
+    }
+    return (int)valor;
 }
 
 int leerEntero(const char mensaje[]) {
-    int valor;
-    int resultado;
-
-    printf("%s", mensaje);
-    resultado = scanf("%d", &valor);
-    while (resultado != 1) {
-        printf("Entrada invalida. Ingrese un numero entero: ");
-        limpiarEntrada();
-        resultado = scanf("%d", &valor);
-    }
-    limpiarEntrada();
-    return valor;
+    return leerEnteroRango(mensaje, INT_MIN, INT_MAX);
 }
 
+/* Lee un importe >= 0. Acepta coma o punto como separador decimal. */
 float leerFloat(const char mensaje[]) {
-    float valor;
-    int resultado;
+    char linea[MAX_LINEA];
+    char *fin;
+    char *coma;
+    double valor = 0;
+    bool valido = false;
 
-    printf("%s", mensaje);
-    resultado = scanf("%f", &valor);
-    while (resultado != 1 || valor < 0) {
-        printf("Entrada invalida. Ingrese un importe mayor o igual a cero: ");
-        limpiarEntrada();
-        resultado = scanf("%f", &valor);
+    while (!valido) {
+        printf("%s", mensaje);
+        leerLinea(linea, sizeof(linea));
+
+        coma = strchr(linea, ',');
+        if (coma != NULL) {
+            *coma = '.';
+        }
+
+        valor = strtod(linea, &fin);
+        while (isspace((unsigned char)*fin)) {
+            fin++;
+        }
+
+        if (fin == linea || *fin != '\0' ||
+            !(valor >= 0 && valor <= PRECIO_MAXIMO)) {
+            printf("Entrada invalida. Ingrese un importe mayor o igual a cero.\n");
+        } else {
+            valido = true;
+        }
     }
-    limpiarEntrada();
-    return valor;
+    return (float)valor;
 }
 
 char leerTipo(void) {
-    char tipo;
-    int resultado;
+    char linea[MAX_LINEA];
+    char tipo = ' ';
+    bool valido = false;
 
-    printf("Tipo de pedido (L = local, D = domicilio): ");
-    resultado = scanf(" %c", &tipo);
-    while (resultado != 1 ||
-           (tipo != 'L' && tipo != 'l' && tipo != 'D' && tipo != 'd')) {
-        printf("Opcion invalida. Ingrese L o D: ");
-        limpiarEntrada();
-        resultado = scanf(" %c", &tipo);
-    }
-    limpiarEntrada();
+    while (!valido) {
+        printf("Tipo de pedido (L = local, D = domicilio): ");
+        leerLinea(linea, sizeof(linea));
 
-    if (tipo == 'l') {
-        tipo = 'L';
-    }
-    if (tipo == 'd') {
-        tipo = 'D';
+        if (strlen(linea) == 1) {
+            tipo = (char)toupper((unsigned char)linea[0]);
+            valido = (tipo == 'L' || tipo == 'D');
+        }
+        if (!valido) {
+            printf("Opcion invalida. Ingrese L o D.\n");
+        }
     }
     return tipo;
 }
 
 bool leerEstado(void) {
-    int estado;
-    int resultado;
-
-    printf("Pedido entregado? (1 = si, 0 = no): ");
-    resultado = scanf("%d", &estado);
-    while (resultado != 1 || (estado != 0 && estado != 1)) {
-        printf("Ingrese 1 para entregado o 0 para pendiente: ");
-        limpiarEntrada();
-        resultado = scanf("%d", &estado);
-    }
-    limpiarEntrada();
-    return estado == 1;
+    return leerEnteroRango("Pedido entregado? (1 = si, 0 = no): ", 0, 1) == 1;
 }
 
-/* Lee un registro separado por punto y coma. */
+/* Lee el proximo pedido valido del archivo. Saltea lineas en blanco o mal
+   formadas. Devuelve false solo cuando se termina el archivo. */
 bool leerPedido(FILE *archivo, Pedido *pedido) {
+    char linea[MAX_LINEA];
     int entregado;
     int resultado;
-    char linea[256];
-
     bool leido = false;
 
-    if (fgets(linea, sizeof(linea), archivo) != NULL) {
+    while (!leido && fgets(linea, sizeof(linea), archivo) != NULL) {
         resultado = sscanf(linea, "%d;%59[^;];%59[^;];%c;%f;%d",
                            &pedido->numero,
                            pedido->cliente,
@@ -208,6 +259,14 @@ bool leerPedido(FILE *archivo, Pedido *pedido) {
     return leido;
 }
 
+/* Escribe un pedido con el formato del archivo. */
+bool escribirPedido(FILE *archivo, Pedido pedido) {
+    return fprintf(archivo, "%d;%s;%s;%c;%.2f;%d\n",
+                   pedido.numero, pedido.cliente, pedido.comida,
+                   pedido.tipo, pedido.precio,
+                   pedido.entregado ? 1 : 0) > 0;
+}
+
 void mostrarPedido(Pedido pedido) {
     printf("------------------------------------\n");
     printf("Numero: %d\n", pedido.numero);
@@ -216,6 +275,48 @@ void mostrarPedido(Pedido pedido) {
     printf("Tipo: %s\n", pedido.tipo == 'L' ? "Local" : "Domicilio");
     printf("Precio: $%.2f\n", pedido.precio);
     printf("Estado: %s\n", pedido.entregado ? "Entregado" : "Pendiente");
+}
+
+/* Busca 'buscado' dentro de 'texto' sin distinguir mayusculas/minusculas. */
+bool contieneTexto(const char texto[], const char buscado[]) {
+    int largoTexto = (int)strlen(texto);
+    int largoBuscado = (int)strlen(buscado);
+    int inicio = 0;
+    int j;
+    bool hallado = false;
+
+    while (!hallado && inicio + largoBuscado <= largoTexto) {
+        j = 0;
+        while (j < largoBuscado &&
+               tolower((unsigned char)texto[inicio + j]) ==
+               tolower((unsigned char)buscado[j])) {
+            j++;
+        }
+        if (j == largoBuscado) {
+            hallado = true;
+        }
+        inicio++;
+    }
+    return hallado;
+}
+
+/* Compara un pedido con el criterio segun el campo elegido:
+   1 = numero, 2 = cliente, 3 = comida, 4 = tipo, 5 = estado. */
+bool coincide(Pedido pedido, int campo, Pedido criterio) {
+    bool resultado = false;
+
+    if (campo == 1) {
+        resultado = (pedido.numero == criterio.numero);
+    } else if (campo == 2) {
+        resultado = contieneTexto(pedido.cliente, criterio.cliente);
+    } else if (campo == 3) {
+        resultado = contieneTexto(pedido.comida, criterio.comida);
+    } else if (campo == 4) {
+        resultado = (pedido.tipo == criterio.tipo);
+    } else if (campo == 5) {
+        resultado = (pedido.entregado == criterio.entregado);
+    }
+    return resultado;
 }
 
 bool numeroExiste(int numero) {
@@ -258,12 +359,7 @@ bool agregarPedido(void) {
 
     archivo = fopen(ARCHIVO_PEDIDOS, "a");
     if (archivo != NULL) {
-        if (fprintf(archivo, "%d;%s;%s;%c;%.2f;%d\n",
-                    pedido.numero, pedido.cliente, pedido.comida,
-                    pedido.tipo, pedido.precio,
-                    pedido.entregado ? 1 : 0) > 0) {
-            guardado = true;
-        }
+        guardado = escribirPedido(archivo, pedido);
         fclose(archivo);
     }
 
@@ -316,6 +412,9 @@ void listarPorPrecio(void) {
 
         if (cantidad == 0) {
             printf("No hay pedidos que superen ese importe.\n");
+        } else {
+            printf("------------------------------------\n");
+            printf("Cantidad de pedidos: %d\n", cantidad);
         }
     }
 }
@@ -323,25 +422,47 @@ void listarPorPrecio(void) {
 void buscarPedido(void) {
     FILE *archivo;
     Pedido pedido;
-    int numero;
-    bool encontrado = false;
+    Pedido criterio;
+    int campo;
+    int cantidad = 0;
 
-    numero = leerEntero("Ingrese el numero de pedido a buscar: ");
+    printf("Buscar por:\n");
+    printf("1. Numero de pedido\n");
+    printf("2. Cliente\n");
+    printf("3. Comida\n");
+    printf("4. Tipo (local / domicilio)\n");
+    printf("5. Estado (entregado / pendiente)\n");
+    campo = leerEnteroRango("Seleccione el campo: ", 1, 5);
+
+    if (campo == 1) {
+        criterio.numero = leerEntero("Numero de pedido a buscar: ");
+    } else if (campo == 2) {
+        leerTexto("Cliente a buscar: ", criterio.cliente, MAX_TEXTO);
+    } else if (campo == 3) {
+        leerTexto("Comida a buscar: ", criterio.comida, MAX_TEXTO);
+    } else if (campo == 4) {
+        criterio.tipo = leerTipo();
+    } else {
+        criterio.entregado = leerEstado();
+    }
+
     archivo = fopen(ARCHIVO_PEDIDOS, "r");
-
     if (archivo == NULL) {
         printf("No se encontro el archivo de pedidos.\n");
     } else {
-        while (!encontrado && leerPedido(archivo, &pedido)) {
-            if (pedido.numero == numero) {
+        while (leerPedido(archivo, &pedido)) {
+            if (coincide(pedido, campo, criterio)) {
                 mostrarPedido(pedido);
-                encontrado = true;
+                cantidad++;
             }
         }
         fclose(archivo);
 
-        if (!encontrado) {
-            printf("No existe un pedido con ese numero.\n");
+        if (cantidad == 0) {
+            printf("No se encontraron pedidos con ese dato.\n");
+        } else {
+            printf("------------------------------------\n");
+            printf("Pedidos encontrados: %d\n", cantidad);
         }
     }
 }
@@ -351,7 +472,8 @@ void dividirPedidos(void) {
     FILE *entregados;
     FILE *pendientes;
     Pedido pedido;
-    bool error = false;
+    int cantEntregados = 0;
+    int cantPendientes = 0;
 
     origen = fopen(ARCHIVO_PEDIDOS, "r");
     if (origen == NULL) {
@@ -362,21 +484,19 @@ void dividirPedidos(void) {
 
         if (entregados == NULL || pendientes == NULL) {
             printf("No se pudieron crear los archivos de salida.\n");
-            error = true;
-        }
-
-        if (entregados != NULL && pendientes != NULL) {
+        } else {
             while (leerPedido(origen, &pedido)) {
                 if (pedido.entregado) {
-                    fprintf(entregados, "%d;%s;%s;%c;%.2f;1\n",
-                            pedido.numero, pedido.cliente, pedido.comida,
-                            pedido.tipo, pedido.precio);
+                    escribirPedido(entregados, pedido);
+                    cantEntregados++;
                 } else {
-                    fprintf(pendientes, "%d;%s;%s;%c;%.2f;0\n",
-                            pedido.numero, pedido.cliente, pedido.comida,
-                            pedido.tipo, pedido.precio);
+                    escribirPedido(pendientes, pedido);
+                    cantPendientes++;
                 }
             }
+            printf("Se crearon %s (%d pedidos) y %s (%d pedidos).\n",
+                   ARCHIVO_ENTREGADOS, cantEntregados,
+                   ARCHIVO_PENDIENTES, cantPendientes);
         }
 
         if (entregados != NULL) {
@@ -386,9 +506,5 @@ void dividirPedidos(void) {
             fclose(pendientes);
         }
         fclose(origen);
-
-        if (!error) {
-            printf("Se crearon entregados.txt y pendientes.txt correctamente.\n");
-        }
     }
 }
