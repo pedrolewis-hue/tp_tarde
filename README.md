@@ -49,5 +49,5 @@ Intentar agregar un numero ya existente (debe rechazarlo).
 Escribir letras donde se pide un numero (debe volver a preguntar).
 Separar entregados y pendientes y abrir los dos archivos generados.
 Notas
-Lenguaje: C estandar (C99), sin variables globales.
+Lenguaje: C estandar, sin variables globales.
 Los datos se leen del archivo en cada operacion; el programa no los guarda en memoria.
