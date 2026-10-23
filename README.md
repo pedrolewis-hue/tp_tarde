@@ -29,6 +29,7 @@ numero;cliente;comida;tipo;precio;entregado
 
 2;Maria Gomez;Hamburguesa doble;D;6200.50;0
 
+
 tipo: L (local) o D (domicilio).
 
 entregado: 1 (entregado) o 0 (pendiente).
@@ -36,7 +37,9 @@ entregado: 1 (entregado) o 0 (pendiente).
 Las lineas en blanco o mal formadas se ignoran al leer.
 
 
+
 En Windows el ejecutable se llama pedidos.exe. El archivo pedidos.txt debe estar en la misma carpeta desde donde se ejecuta el programa. Si no existe, se crea al agregar el primer pedido.
+
 
 Validaciones
 El numero de pedido debe ser positivo y no repetirse.
@@ -44,6 +47,8 @@ Cliente y comida no pueden estar vacios ni contener ;.
 El tipo solo acepta L o D (en mayuscula o minuscula).
 El precio debe ser mayor o igual a cero (acepta coma o punto decimal).
 Cualquier entrada numerica invalida se vuelve a pedir.
+
+
 Pruebas sugeridas
 Listar todos los pedidos (deberian aparecer 12).
 Listar por precio con 9000 (deberian aparecer 6).
@@ -52,6 +57,8 @@ Agregar un pedido nuevo y verificar que aparece en el listado.
 Intentar agregar un numero ya existente (debe rechazarlo).
 Escribir letras donde se pide un numero (debe volver a preguntar).
 Separar entregados y pendientes y abrir los dos archivos generados.
+
+
 Notas
 Lenguaje: C estandar, sin variables globales.
 Los datos se leen del archivo en cada operacion; el programa no los guarda en memoria.
