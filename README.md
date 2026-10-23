@@ -1,3 +1,26 @@
+Enunciado:
+Realizar un programa que utilizando ESTRUCTURAS y ARCHIVO DE TEXTO
+resuelva un MENÚ DE OPCIONES.
+La ESTRUCTURA DE DATOS puede tener la cantidad de campos que defina cada
+equipo pero debe tener AL MENOS:
+.Un campo STRING
+.Un campo char (un sólo char)
+.Un campo numérico entero
+.Un campo numérico float o double
+.Un campo booleano
+El menú debe tener las siguientes opciones:
+.Agregar un registro al archivo
+.Listar por pantalla todo el archivo
+.Listar por pantalla sólo los registros que cumplan alguna condición (la
+condición a elección del equipo)
+.Búsqueda específica por alguno de los campos, preguntando al usuario qué
+dato buscar y mostrar los resultados por pantalla
+.Dividir la información del archivo de origen en dos archivos de texto nuevos
+generados según el valor del campo booleano
+.Salir del sistema
+
+
+
 Funcionalidades
 
 El programa muestra un menu con estas opciones:
