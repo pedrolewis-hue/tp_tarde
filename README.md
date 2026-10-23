@@ -24,11 +24,15 @@ Formato del archivo
 Un pedido por linea, con los campos separados por ;:
 
 numero;cliente;comida;tipo;precio;entregado
+
 1;Juan Perez;Pizza muzzarella;L;8500.00;1
+
 2;Maria Gomez;Hamburguesa doble;D;6200.50;0
 
 tipo: L (local) o D (domicilio).
+
 entregado: 1 (entregado) o 0 (pendiente).
+
 Las lineas en blanco o mal formadas se ignoran al leer.
 
 
