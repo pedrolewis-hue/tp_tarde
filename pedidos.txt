@@ -1,6 +1,0 @@
-1;Juan Perez;Pizza muzzarella;L;8500.00;1
-2;Maria Gomez;Hamburguesa doble;D;6200.50;0
-3;Lucas Diaz;Milanesa con papas;D;9800.00;0
-4;Ana Lopez;Empanadas x12;L;7300.00;1
-5;Sofia Ruiz;Ensalada caesar;L;5400.00;0
-6;Pedro Castro;Pizza fugazzeta;D;9100.00;1
