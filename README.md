@@ -9,7 +9,7 @@ El programa muestra un menu con estas opciones:
 5. Separar entregados y pendientes: genera entregados.txt y pendientes.txt segun el campo booleano.
 6. Salir.
 
-7. Estructura de datos
+Estructura de datos
 
 typedef struct {
     int numero;
