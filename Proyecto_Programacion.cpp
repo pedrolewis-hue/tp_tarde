@@ -76,7 +76,17 @@ do {
 return 0;
 }
 
-void mostrarMenu(void) { printf("====================================\n"); printf(" SISTEMA DE PEDIDOS DE COMIDA\n"); printf("====================================\n"); printf("1. Agregar un pedido\n"); printf("2. Listar todos los pedidos\n"); printf("3. Listar pedidos por precio\n"); printf("4. Buscar pedidos\n"); printf("5. Separar entregados y pendientes\n"); printf("6. Salir\n"); printf("====================================\n"); }
+void mostrarMenu(void) { 
+    printf("====================================\n"); 
+    printf(" SISTEMA DE PEDIDOS DE COMIDA\n"); 
+    printf("====================================\n"); 
+    printf("1. Agregar un pedido\n"); 
+    printf("2. Listar todos los pedidos\n"); 
+    printf("3. Listar pedidos por precio\n"); 
+    printf("4. Buscar pedidos\n"); 
+    printf("5. Separar entregados y pendientes\n"); 
+    printf("6. Salir\n"); 
+    printf("====================================\n"); }
 
  void leerLinea(char destino[], int tamanio) { int longitud; int caracter;
 
@@ -96,7 +106,8 @@ if (longitud > 0 && destino[longitud - 1] == '\n') {
 }
 }
 
- void leerTexto(const char mensaje[], char destino[], int tamanio) { bool valido = false;
+ void leerTexto(const char mensaje[], char destino[], int tamanio) { 
+     bool valido = false;
 
 while (!valido) {
     printf("%s", mensaje);
@@ -112,7 +123,11 @@ while (!valido) {
 }
 }
 
-int leerEnteroRango(const char mensaje[], int minimo, int maximo) { char linea[MAX_LINEA]; char *fin; long valor = 0; bool valido = false;
+int leerEnteroRango(const char mensaje[], int minimo, int maximo) { 
+    char linea[MAX_LINEA]; 
+    char *fin; 
+    long valor = 0; 
+    bool valido = false;
 
 while (!valido) {
     printf("%s", mensaje);
@@ -134,9 +149,16 @@ while (!valido) {
 return (int)valor;
 }
 
-int leerEntero(const char mensaje[]) { return leerEnteroRango(mensaje, INT_MIN, INT_MAX); }
+int leerEntero(const char mensaje[]) { 
+    return leerEnteroRango(mensaje, INT_MIN, INT_MAX); 
+}
 
- float leerFloat(const char mensaje[]) { char linea[MAX_LINEA]; char *fin; char *coma; double valor = 0; bool valido = false;
+ float leerFloat(const char mensaje[]) { 
+     char linea[MAX_LINEA]; 
+     char *fin; 
+     char *coma; 
+     double valor = 0; 
+     bool valido = false;
 
 while (!valido) {
     printf("%s", mensaje);
@@ -162,7 +184,10 @@ while (!valido) {
 return (float)valor;
 }
 
-char leerTipo(void) { char linea[MAX_LINEA]; char tipo = ' '; bool valido = false;
+char leerTipo(void) { 
+    char linea[MAX_LINEA]; 
+    char tipo = ' '; 
+    bool valido = false;
 
 while (!valido) {
     printf("Tipo de pedido (L = local, D = domicilio): ");
@@ -179,9 +204,15 @@ while (!valido) {
 return tipo;
 }
 
-bool leerEstado(void) { return leerEnteroRango("Pedido entregado? (1 = si, 0 = no): ", 0, 1) == 1; }
+bool leerEstado(void) { 
+    return leerEnteroRango("Pedido entregado? (1 = si, 0 = no): ", 0, 1) == 1; 
+}
 
- bool leerPedido(FILE *archivo, Pedido *pedido) { char linea[MAX_LINEA]; int entregado; int resultado; bool leido = false;
+ bool leerPedido(FILE *archivo, Pedido *pedido) { 
+     char linea[MAX_LINEA]; 
+     int entregado; 
+     int resultado; 
+     bool leido = false;
 
 while (!leido && fgets(linea, sizeof(linea), archivo) != NULL) {
     resultado = sscanf(linea, "%d;%59[^;];%59[^;];%c;%f;%d",
@@ -200,11 +231,26 @@ while (!leido && fgets(linea, sizeof(linea), archivo) != NULL) {
 return leido;
 }
 
- bool escribirPedido(FILE *archivo, Pedido pedido) { return fprintf(archivo, "%d;%s;%s;%c;%.2f;%d\n", pedido.numero, pedido.cliente, pedido.comida, pedido.tipo, pedido.precio, pedido.entregado ? 1 : 0) > 0; }
+ bool escribirPedido(FILE *archivo, Pedido pedido) { 
+     return fprintf(archivo, "%d;%s;%s;%c;%.2f;%d\n", pedido.numero, pedido.cliente, pedido.comida, pedido.tipo, pedido.precio, pedido.entregado ? 1 : 0) > 0; 
+ }
 
-void mostrarPedido(Pedido pedido) { printf("------------------------------------\n"); printf("Numero: %d\n", pedido.numero); printf("Cliente: %s\n", pedido.cliente); printf("Comida: %s\n", pedido.comida); printf("Tipo: %s\n", pedido.tipo == 'L' ? "Local" : "Domicilio"); printf("Precio: $%.2f\n", pedido.precio); printf("Estado: %s\n", pedido.entregado ? "Entregado" : "Pendiente"); }
+void mostrarPedido(Pedido pedido) { 
+    printf("------------------------------------\n"); 
+    printf("Numero: %d\n", pedido.numero); 
+    printf("Cliente: %s\n", pedido.cliente); 
+    printf("Comida: %s\n", pedido.comida); 
+    printf("Tipo: %s\n", pedido.tipo == 'L' ? "Local" : "Domicilio"); 
+    printf("Precio: $%.2f\n", pedido.precio); 
+    printf("Estado: %s\n", pedido.entregado ? "Entregado" : "Pendiente"); 
+}
 
- bool contieneTexto(const char texto[], const char buscado[]) { int largoTexto = (int)strlen(texto); int largoBuscado = (int)strlen(buscado); int inicio = 0; int j; bool hallado = false;
+ bool contieneTexto(const char texto[], const char buscado[]) { 
+     int largoTexto = (int)strlen(texto); 
+     int largoBuscado = (int)strlen(buscado); 
+     int inicio = 0; 
+     int j; 
+     bool hallado = false;
 
 while (!hallado && inicio + largoBuscado <= largoTexto) {
     j = 0;
@@ -221,7 +267,8 @@ while (!hallado && inicio + largoBuscado <= largoTexto) {
 return hallado;
 }
 
- bool coincide(Pedido pedido, int campo, Pedido criterio) { bool resultado = false;
+ bool coincide(Pedido pedido, int campo, Pedido criterio) { 
+     bool resultado = false;
 
 if (campo == 1) {
     resultado = (pedido.numero == criterio.numero);
@@ -237,7 +284,10 @@ if (campo == 1) {
 return resultado;
 }
 
-bool numeroExiste(int numero) { FILE *archivo; Pedido pedido; bool encontrado = false;
+bool numeroExiste(int numero) { 
+    FILE *archivo; 
+    Pedido pedido; 
+    bool encontrado = false;
 
 archivo = fopen(ARCHIVO_PEDIDOS, "r");
 if (archivo != NULL) {
@@ -251,7 +301,10 @@ if (archivo != NULL) {
 return encontrado;
 }
 
-bool agregarPedido(void) { FILE *archivo; Pedido pedido; bool guardado = false;
+bool agregarPedido(void) { 
+    FILE *archivo; 
+    Pedido pedido; 
+    bool guardado = false;
 
 pedido.numero = leerEntero("Numero de pedido: ");
 while (pedido.numero <= 0 || numeroExiste(pedido.numero)) {
@@ -278,7 +331,10 @@ if (archivo != NULL) {
 return guardado;
 }
 
-void listarPedidos(void) { FILE *archivo; Pedido pedido; int cantidad = 0;
+void listarPedidos(void) { 
+    FILE *archivo; 
+    Pedido pedido; 
+    int cantidad = 0;
 
 archivo = fopen(ARCHIVO_PEDIDOS, "r");
 if (archivo == NULL) {
@@ -299,7 +355,11 @@ if (archivo == NULL) {
 }
 }
 
-void listarPorPrecio(void) { FILE *archivo; Pedido pedido; float minimo; int cantidad = 0;
+void listarPorPrecio(void) { 
+    FILE *archivo; 
+    Pedido pedido; 
+    float minimo; 
+    int cantidad = 0;
 
 minimo = leerFloat("Mostrar pedidos con precio mayor a: $");
 archivo = fopen(ARCHIVO_PEDIDOS, "r");
@@ -324,7 +384,12 @@ if (archivo == NULL) {
 }
 }
 
-void buscarPedido(void) { FILE *archivo; Pedido pedido; Pedido criterio; int campo; int cantidad = 0;
+void buscarPedido(void) { 
+    FILE *archivo; 
+    Pedido pedido; 
+    Pedido criterio; 
+    int campo; 
+    int cantidad = 0;
 
 printf("Buscar por:\n");
 printf("1. Numero de pedido\n");
@@ -367,7 +432,13 @@ if (archivo == NULL) {
 }
 }
 
-void dividirPedidos(void) { FILE *origen; FILE *entregados; FILE *pendientes; Pedido pedido; int cantEntregados = 0; int cantPendientes = 0;
+void dividirPedidos(void) { 
+    FILE *origen; 
+    FILE *entregados; 
+    FILE *pendientes; 
+    Pedido pedido; 
+    int cantEntregados = 0; 
+    int cantPendientes = 0;
 
 origen = fopen(ARCHIVO_PEDIDOS, "r");
 if (origen == NULL) {
