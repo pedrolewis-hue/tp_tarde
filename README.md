@@ -42,8 +42,8 @@ typedef struct {
 } Pedido;
 
 void mostrarMenu(void);
-void leerLinea(char destino[], int tamanio);
-void leerTexto(const char mensaje[], char destino[], int tamanio);
+void leerLinea(char destino[], int tamaño);
+void leerTexto(const char mensaje[], char destino[], int tamaño);
 int leerEnteroRango(const char mensaje[], int minimo, int maximo);
 int leerEntero(const char mensaje[]);
 float leerFloat(const char mensaje[]);
@@ -113,7 +113,7 @@ void leerLinea(char destino[], int tamanio) {
     int longitud;
     int caracter;
 
-    if (fgets(destino, tamanio, stdin) == NULL) {
+    if (fgets(destino, tamaño, stdin) == NULL) {
         printf("\nEntrada cerrada. Saliendo del sistema.\n");
         exit(EXIT_SUCCESS);
     }
@@ -135,7 +135,7 @@ void leerTexto(const char mensaje[], char destino[], int tamanio) {
 
     while (!valido) {
         printf("%s", mensaje);
-        leerLinea(destino, tamanio);
+        leerLinea(destino, tamaño);
 
         if (destino[0] == '\0') {
             printf("El texto no puede estar vacio.\n");
