@@ -182,29 +182,28 @@ void separarPedidos(void) {
 
     if (origen == NULL) {
         printf("No hay pedidos.\n");
-        return;
-    }
+    } else {
+        entregados = fopen("entregados.txt", "w");
+        pendientes = fopen("pendientes.txt", "w");
 
-    entregados = fopen("entregados.txt", "w");
-    pendientes = fopen("pendientes.txt", "w");
-
-    while (leerPedido(origen, &p)) {
-        if (p.entregado) {
-            escribirPedido(entregados, p);
-        } else {
-            escribirPedido(pendientes, p);
+        while (leerPedido(origen, &p)) {
+            if (p.entregado) {
+                escribirPedido(entregados, p);
+            } else {
+                escribirPedido(pendientes, p);
+            }
         }
+
+        fclose(origen);
+        fclose(entregados);
+        fclose(pendientes);
+        printf("Archivos entregados.txt y pendientes.txt creados.\n");
+
+        printf("\n===== PEDIDOS ENTREGADOS =====\n");
+        mostrarArchivo("entregados.txt");
+        printf("\n===== PEDIDOS PENDIENTES =====\n");
+        mostrarArchivo("pendientes.txt");
     }
-
-    fclose(origen);
-    fclose(entregados);
-    fclose(pendientes);
-    printf("Archivos entregados.txt y pendientes.txt creados.\n");
-
-    printf("\n===== PEDIDOS ENTREGADOS =====\n");
-    mostrarArchivo("entregados.txt");
-    printf("\n===== PEDIDOS PENDIENTES =====\n");
-    mostrarArchivo("pendientes.txt");
 }
 
 /* ---------- Funciones auxiliares ---------- */
