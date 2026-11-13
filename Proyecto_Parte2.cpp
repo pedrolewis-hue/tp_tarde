@@ -125,53 +125,53 @@ void buscarPedido(void) {
     Pedido p;
     int campo, numero = 0, estado = 0;
     char texto[60] = "", tipo = ' ';
-    int coincide;
     FILE *f;
 
     printf("Buscar por: 1.Numero 2.Cliente 3.Comida 4.Tipo 5.Estado\n");
     scanf("%d", &campo);
 
-    if (campo == 1) {
-        printf("Numero: ");
-        scanf("%d", &numero);
-    } else if (campo == 2 || campo == 3) {
-        printf("Texto a buscar: ");
-        scanf(" %59[^\n]", texto);
-    } else if (campo == 4) {
-        printf("Tipo (L/D): ");
-        scanf(" %c", &tipo);
-    } else if (campo == 5) {
-        printf("Entregado? (1 = si, 0 = no): ");
-        scanf("%d", &estado);
+    if (campo >= 1 && campo <= 5) {
+        if (campo == 1) {
+            printf("Numero: ");
+            scanf("%d", &numero);
+        } else if (campo == 2 || campo == 3) {
+            printf("Texto a buscar: ");
+            scanf(" %59[^\n]", texto);
+        } else if (campo == 4) {
+            printf("Tipo (L/D): ");
+            scanf(" %c", &tipo);
+        } else {
+            printf("Entregado? (1 = si, 0 = no): ");
+            scanf("%d", &estado);
+        }
+
+        f = fopen("pedidos.txt", "r");
+        if (f == NULL) {
+            printf("No hay pedidos.\n");
+        } else {
+            while (leerPedido(f, &p)) {
+                switch (campo) {
+                    case 1:
+                        if (p.numero == numero) mostrarPedido(p);
+                        break;
+                    case 2:
+                        if (strcmp(p.cliente, texto) == 0) mostrarPedido(p);
+                        break;
+                    case 3:
+                        if (strcmp(p.comida, texto) == 0) mostrarPedido(p);
+                        break;
+                    case 4:
+                        if (p.tipo == tipo) mostrarPedido(p);
+                        break;
+                    case 5:
+                        if (p.entregado == estado) mostrarPedido(p);
+                        break;
+                }
+            }
+            fclose(f);
+        }
     } else {
         printf("Campo invalido.\n");
-        return;
-    }
-
-       f = fopen("pedidos.txt", "r");
-    if (f == NULL) {
-        printf("No hay pedidos.\n");
-    } else {
-        while (leerPedido(f, &p)) {
-            switch (campo) {
-                case 1:
-                    if (p.numero == numero) mostrarPedido(p);
-                    break;
-                case 2:
-                    if (strcmp(p.cliente, texto) == 0) mostrarPedido(p);
-                    break;
-                case 3:
-                    if (strcmp(p.comida, texto) == 0) mostrarPedido(p);
-                    break;
-                case 4:
-                    if (p.tipo == tipo) mostrarPedido(p);
-                    break;
-                case 5:
-                    if (p.entregado == estado) mostrarPedido(p);
-                    break;
-            }
-        }
-        fclose(f);
     }
 }
 
