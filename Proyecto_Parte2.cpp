@@ -148,29 +148,29 @@ void buscarPedido(void) {
         return;
     }
 
-    f = fopen("pedidos.txt", "r");
+       f = fopen("pedidos.txt", "r");
     if (f == NULL) {
         printf("No hay pedidos.\n");
     } else {
         while (leerPedido(f, &p)) {
-    switch (campo) {
-        case 1:
-            if (p.numero == numero) mostrarPedido(p);
-            break;
-        case 2:
-            if (strstr(p.cliente, texto) != NULL) mostrarPedido(p);
-            break;
-        case 3:
-            if (strstr(p.comida, texto) != NULL) mostrarPedido(p);
-            break;
-        case 4:
-            if (p.tipo == tipo) mostrarPedido(p);
-            break;
-        case 5:
-            if (p.entregado == estado) mostrarPedido(p);
-            break;
-    	}
-	}
+            switch (campo) {
+                case 1:
+                    if (p.numero == numero) mostrarPedido(p);
+                    break;
+                case 2:
+                    if (strcmp(p.cliente, texto) == 0) mostrarPedido(p);
+                    break;
+                case 3:
+                    if (strcmp(p.comida, texto) == 0) mostrarPedido(p);
+                    break;
+                case 4:
+                    if (p.tipo == tipo) mostrarPedido(p);
+                    break;
+                case 5:
+                    if (p.entregado == estado) mostrarPedido(p);
+                    break;
+            }
+        }
         fclose(f);
     }
 }
